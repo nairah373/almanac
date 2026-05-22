@@ -1,0 +1,153 @@
+// Almanac — academic resource marketplace
+// Data model. All app DB access goes through Prisma on the server;
+// Supabase Auth owns auth.users, and Profile.id mirrors the auth user id.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  STUDENT
+  CREATOR
+  COACHING
+  ADMIN
+}
+
+enum ResourceType {
+  HANDWRITTEN
+  TYPED
+  PPT_SUMMARY
+  LAB_RECORD
+  PYQ
+  FORMULA_SHEET
+  FLASHCARDS
+}
+
+enum ResourceStatus {
+  DRAFT
+  PUBLISHED
+  REMOVED
+}
+
+enum PurchaseStatus {
+  CREATED
+  PAID
+  FREE
+}
+
+/// A user account. id is the Supabase auth user UUID.
+model Profile {
+  id              String   @id @db.Uuid
+  email           String   @unique
+  fullName        String
+  username        String   @unique
+  role            UserRole @default(STUDENT)
+  university      String?
+  branch          String?
+  collegeVerified Boolean  @default(false)
+  bio             String?
+  avatarUrl       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  resources Resource[] @relation("CreatorResources")
+  purchases Purchase[] @relation("BuyerPurchases")
+  sales     Purchase[] @relation("CreatorSales")
+  reviews   Review[]
+  following Follow[]   @relation("Follower")
+  followers Follow[]   @relation("Creator")
+}
+
+/// An uploaded study resource (note, PYQ, formula sheet, etc.).
+model Resource {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  resourceType  ResourceType
+  university    String
+  branch        String
+  semester      Int
+  subject       String
+  moduleName    String?
+  examType      String?
+  priceInPaise  Int            @default(0)
+  isFree        Boolean        @default(false)
+  originalKey   String // path in the private `originals` storage bucket
+  previewKey    String? // path in the public `previews` storage bucket
+  pageCount     Int            @default(0)
+  fileSizeBytes Int            @default(0)
+  downloadCount Int            @default(0)
+  status        ResourceStatus @default(DRAFT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  creatorId String  @db.Uuid
+  creator   Profile @relation("CreatorResources", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  purchases Purchase[]
+  reviews   Review[]
+
+  @@index([status, createdAt])
+  @@index([university, branch, semester])
+  @@index([subject])
+  @@index([creatorId])
+}
+
+/// A buyer's claim on a resource — created on checkout, PAID after payment,
+/// or FREE for free resources. One per (buyer, resource).
+model Purchase {
+  id                    String         @id @default(cuid())
+  status                PurchaseStatus @default(CREATED)
+  amountInPaise         Int            @default(0)
+  platformFeeInPaise    Int            @default(0)
+  creatorEarningInPaise Int            @default(0)
+  razorpayOrderId       String?        @unique
+  razorpayPaymentId     String?
+  createdAt             DateTime       @default(now())
+
+  buyerId    String   @db.Uuid
+  buyer      Profile  @relation("BuyerPurchases", fields: [buyerId], references: [id], onDelete: Cascade)
+  creatorId  String   @db.Uuid
+  creator    Profile  @relation("CreatorSales", fields: [creatorId], references: [id], onDelete: Cascade)
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([buyerId, resourceId])
+  @@index([creatorId])
+}
+
+/// A rating + review left by a buyer on a resource.
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  authorId   String   @db.Uuid
+  author     Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, authorId])
+  @@index([resourceId])
+}
+
+/// A follow relationship between a student and a creator.
+model Follow {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  followerId String  @db.Uuid
+  follower   Profile @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  creatorId  String  @db.Uuid
+  creator    Profile @relation("Creator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, creatorId])
+  @@index([creatorId])
+}

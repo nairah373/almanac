@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
+/*
+  Almanac design system — premium, calm, monochrome.
+  A warm "paper" palette: near-white surfaces, near-black ink, hairline borders.
+  Light theme only by design — a quiet, distraction-free academic library.
+*/
+@theme {
+  --color-bg: #faf9f6;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f2ed;
+  --color-ink: #1c1b19;
+  --color-ink-soft: #45433d;
+  --color-muted: #6d6b63;
+  --color-faint: #9c998f;
+  --color-line: #e8e6df;
+  --color-line-strong: #d7d4ca;
+  --color-accent: #1c1b19;
+  --color-gold: #876f37;
+  --color-success: #3f6b4f;
+  --color-danger: #9a3b32;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-card: 0 1px 2px rgba(28, 27, 25, 0.04), 0 10px 30px -16px rgba(28, 27, 25, 0.16);
+  --shadow-lift: 0 2px 6px rgba(28, 27, 25, 0.06), 0 22px 48px -20px rgba(28, 27, 25, 0.22);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-bg);
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.018em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* Subtle glass surface for sticky headers / overlays. */
+  .glass {
+    background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  }
+
+  .hairline {
+    border: 1px solid var(--color-line);
+  }
+
+  /* A calm hover-lift used on cards. */
+  .lift {
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.22s ease,
+      border-color 0.22s ease;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--color-line-strong);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
 }

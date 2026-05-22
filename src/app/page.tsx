@@ -1,65 +1,288 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Eye,
+  Fingerprint,
+  GraduationCap,
+  Search,
+  Sparkles,
+  Star,
+  Upload,
+} from "lucide-react";
+import { APP_NAME, UNIVERSITIES } from "@/lib/constants";
+import { getFeaturedResources, getTopCreators } from "@/lib/queries";
+import { buttonVariants } from "@/components/ui/Button";
+import { SectionHeading } from "@/components/SectionHeading";
+import { ResourceGrid } from "@/components/ResourceGrid";
+import { CreatorCard } from "@/components/CreatorCard";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+const QUICK_LINKS = [
+  { label: "Previous year questions", href: "/browse?type=PYQ" },
+  { label: "Handwritten notes", href: "/browse?type=HANDWRITTEN" },
+  { label: "Formula sheets", href: "/browse?type=FORMULA_SHEET" },
+  { label: "Flashcards", href: "/browse?type=FLASHCARDS" },
+];
+
+const STEPS = [
+  {
+    icon: Search,
+    title: "Discover precisely",
+    body: "Filter by university, branch, semester and subject to find exactly the resource your exam needs — nothing noisy in between.",
+    tile: "bg-indigo-100 text-indigo-600",
+  },
+  {
+    icon: Eye,
+    title: "Preview before you pay",
+    body: "Read the opening pages and check ratings, downloads and the uploader's identity before a single rupee changes hands.",
+    tile: "bg-rose-100 text-rose-600",
+  },
+  {
+    icon: GraduationCap,
+    title: "Learn, then give back",
+    body: "Download instantly. Upload your own notes and earn from every student you help across the country.",
+    tile: "bg-emerald-100 text-emerald-600",
+  },
+];
+
+const TRUST = [
+  {
+    icon: BadgeCheck,
+    title: "Verified creators",
+    body: "Identity and college shown on every upload, with reputation tiers earned over time.",
+    tile: "bg-indigo-100 text-indigo-600",
+  },
+  {
+    icon: Star,
+    title: "Honest ratings",
+    body: "Real reviews from students who downloaded the resource — quality rises, noise falls away.",
+    tile: "bg-amber-100 text-amber-600",
+  },
+  {
+    icon: Fingerprint,
+    title: "Traceable downloads",
+    body: "Every file is watermarked with the buyer's identity, so good work stays respected.",
+    tile: "bg-teal-100 text-teal-600",
+  },
+];
+
+export default async function HomePage() {
+  const [featured, topCreators] = await Promise.all([
+    getFeaturedResources(6).catch(() => []),
+    getTopCreators(4).catch(() => []),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div>
+      {/* ─── Hero ─────────────────────────────────────────────── */}
+      <section>
+        <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-3 py-1 text-xs font-medium text-indigo-700">
+              <Sparkles size={13} />
+              The academic library for Indian students
+            </span>
+            <h1 className="display mt-6 text-balance text-4xl leading-[1.08] text-ink sm:text-6xl">
+              Find the notes that{" "}
+              <span
+                style={{
+                  backgroundImage:
+                    "linear-gradient(120deg, #6366f1, #d946ef)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                actually get you through exams.
+              </span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted sm:text-lg">
+              {APP_NAME} is a trusted marketplace for high-quality study
+              material — handwritten notes, PYQs, formula sheets and more, from
+              top students across the country.
+            </p>
+
+            <form
+              action="/browse"
+              className="mx-auto mt-8 flex max-w-xl items-center gap-2 rounded-full border border-line-strong bg-white p-1.5 shadow-card focus-within:border-indigo-400"
+            >
+              <Search size={18} className="ml-3 shrink-0 text-faint" />
+              <input
+                type="search"
+                name="q"
+                placeholder="Search a subject, e.g. Data Structures"
+                className="h-10 w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+                aria-label="Search resources"
+              />
+              <button
+                type="submit"
+                className={buttonVariants({ variant: "primary", size: "sm" })}
+              >
+                Search
+              </button>
+            </form>
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {QUICK_LINKS.map((q) => (
+                <Link
+                  key={q.href}
+                  href={q.href}
+                  className="rounded-full border border-line bg-white/70 px-3 py-1.5 text-xs text-ink-soft transition hover:border-indigo-400 hover:text-indigo-700"
+                >
+                  {q.label}
+                </Link>
+              ))}
+            </div>
+
+            <p className="mt-8 text-xs text-faint">
+              Resources spanning {UNIVERSITIES.length - 1}+ universities ·
+              Engineering & MBBS · Verified student creators
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── How it works ─────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-5 py-20">
+        <SectionHeading
+          eyebrow="How it works"
+          title="A smarter way to study"
+          description="No clutter, no noise — just the resource you need and the trust to use it."
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <div
+              key={step.title}
+              className="rounded-2xl border border-line bg-surface p-6"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              <div className="flex items-center justify-between">
+                <div
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${step.tile}`}
+                >
+                  <step.icon size={20} strokeWidth={1.75} />
+                </div>
+                <span className="display text-3xl text-line-strong">
+                  0{i + 1}
+                </span>
+              </div>
+              <h3 className="mt-4 text-lg font-semibold text-ink">
+                {step.title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                {step.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Featured resources ───────────────────────────────── */}
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 py-8">
+          <SectionHeading
+            eyebrow="Most downloaded"
+            title="Resources students rely on"
+            href="/browse"
+            linkLabel="Browse all"
+          />
+          <div className="mt-8">
+            <ResourceGrid resources={featured} />
+          </div>
+        </section>
+      )}
+
+      {/* ─── Trust ────────────────────────────────────────────── */}
+      <section className="mt-4">
+        <div className="mx-auto max-w-6xl px-5 py-20">
+          <SectionHeading
+            eyebrow="Built on trust"
+            title="Why students trust Almanac"
+            description="Every decision on the platform protects the quality of what you study from."
+          />
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {TRUST.map((t) => (
+              <div
+                key={t.title}
+                className="rounded-2xl border border-line bg-surface p-6"
+              >
+                <div
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${t.tile}`}
+                >
+                  <t.icon size={20} strokeWidth={1.75} />
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-ink">
+                  {t.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  {t.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Top creators ─────────────────────────────────────── */}
+      {topCreators.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 py-20">
+          <SectionHeading
+            eyebrow="The community"
+            title="Top creators this season"
+            href="/creators"
+            linkLabel="View leaderboard"
+          />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {topCreators.map((c, i) => (
+              <CreatorCard
+                key={c.creator.id}
+                creator={c.creator}
+                stats={c.stats}
+                rank={i + 1}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Creator CTA ──────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-5 pb-8">
+        <div
+          className="overflow-hidden rounded-3xl px-8 py-14 text-center sm:px-16"
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, #1c1b19 0%, #312e81 60%, #5b21b6 100%)",
+          }}
+        >
+          <Upload size={26} className="mx-auto text-white/70" />
+          <h2 className="display mt-4 text-3xl text-white sm:text-4xl">
+            Your notes helped you. Let them help others.
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/70">
+            Upload once, earn every time a student downloads. Build a reputation
+            that follows you across campuses.
           </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/upload"
+              className={buttonVariants({
+                variant: "secondary",
+                className: "bg-white",
+              })}
+            >
+              Start sharing notes
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/browse"
+              className="text-sm font-medium text-white/80 transition hover:text-white"
+            >
+              Explore resources first
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }

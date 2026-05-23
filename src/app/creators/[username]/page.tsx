@@ -15,6 +15,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { FollowButton } from "@/components/FollowButton";
+import { ProfileSettings } from "@/components/ProfileSettings";
+import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +147,29 @@ export default async function CreatorPage({
           )}
         </div>
       </section>
+
+      {isSelf && (
+        <section className="mt-14">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-faint">
+            Account
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Only you can see this section.
+          </p>
+          <div className="mt-5 space-y-6">
+            <ProfileSettings
+              profile={{
+                fullName: creator.fullName,
+                username: creator.username,
+                university: creator.university,
+                branch: creator.branch,
+                bio: creator.bio,
+              }}
+            />
+            <DeleteAccountButton username={creator.username} />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

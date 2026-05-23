@@ -6,7 +6,6 @@ import {
   Download,
   FileText,
   Library,
-  Settings,
   Upload,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
@@ -26,8 +25,6 @@ import { buttonVariants } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { PageHero } from "@/components/PageHero";
-import { ProfileSettings } from "@/components/ProfileSettings";
-import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DeleteResourceButton } from "@/components/DeleteResourceButton";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +34,6 @@ export const metadata: Metadata = { title: "Dashboard" };
 const TABS = [
   { id: "library", label: "My library", icon: Library },
   { id: "uploads", label: "My uploads", icon: Upload },
-  { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 
 export default async function DashboardPage({
@@ -49,8 +45,7 @@ export default async function DashboardPage({
   if (!profile) redirect("/login?next=/dashboard");
 
   const sp = await searchParams;
-  const tab =
-    sp.tab === "uploads" || sp.tab === "settings" ? sp.tab : "library";
+  const tab = sp.tab === "uploads" ? "uploads" : "library";
 
   const stats = await getCreatorStats(profile.id);
   const tier = tierOf(stats);
@@ -102,20 +97,6 @@ export default async function DashboardPage({
         <div className="mt-7">
           {tab === "library" && <LibraryTab userId={profile.id} />}
           {tab === "uploads" && <UploadsTab userId={profile.id} />}
-          {tab === "settings" && (
-            <div className="space-y-8">
-              <ProfileSettings
-                profile={{
-                  fullName: profile.fullName,
-                  username: profile.username,
-                  university: profile.university,
-                  branch: profile.branch,
-                  bio: profile.bio,
-                }}
-              />
-              <DeleteAccountButton username={profile.username} />
-            </div>
-          )}
         </div>
       </div>
     </div>

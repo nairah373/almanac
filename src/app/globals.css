@@ -54,6 +54,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Clip any off-canvas elements (doodles, blobs) so the page never
+       scrolls horizontally and centered content stays centered. Using
+       `clip` instead of `hidden` keeps the sticky navbar working. */
+    overflow-x: clip;
   }
 
   ::selection {

@@ -89,7 +89,7 @@ export default async function HomePage() {
       {/* ─── Hero ─────────────────────────────────────────────── */}
       <section>
         <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <div className="relative mx-auto max-w-3xl text-center">
+          <div className="relative mx-auto w-full max-w-3xl text-center">
             {/* Paper planes + dashed trails flying around the hero */}
             <DoodleTrail className="pointer-events-none absolute -left-32 -top-2 hidden h-12 w-32 -rotate-6 text-ink/35 lg:block" />
             <DoodlePlane className="pointer-events-none absolute -left-4 -top-3 hidden h-8 w-12 -rotate-[15deg] text-ink/85 lg:block" />

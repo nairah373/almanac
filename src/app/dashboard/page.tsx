@@ -65,7 +65,7 @@ export default async function DashboardPage({
                 href={`/creators/${profile.username}`}
                 className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
               >
-                View public profile
+                View &amp; edit profile
               </Link>
             </div>
           </div>

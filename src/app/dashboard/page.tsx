@@ -27,6 +27,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { PageHero } from "@/components/PageHero";
 import { ProfileSettings } from "@/components/ProfileSettings";
+import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DeleteResourceButton } from "@/components/DeleteResourceButton";
 
 export const dynamic = "force-dynamic";
@@ -102,15 +103,18 @@ export default async function DashboardPage({
           {tab === "library" && <LibraryTab userId={profile.id} />}
           {tab === "uploads" && <UploadsTab userId={profile.id} />}
           {tab === "settings" && (
-            <ProfileSettings
-              profile={{
-                fullName: profile.fullName,
-                username: profile.username,
-                university: profile.university,
-                branch: profile.branch,
-                bio: profile.bio,
-              }}
-            />
+            <div className="space-y-8">
+              <ProfileSettings
+                profile={{
+                  fullName: profile.fullName,
+                  username: profile.username,
+                  university: profile.university,
+                  branch: profile.branch,
+                  bio: profile.bio,
+                }}
+              />
+              <DeleteAccountButton username={profile.username} />
+            </div>
           )}
         </div>
       </div>

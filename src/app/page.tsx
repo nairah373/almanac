@@ -113,7 +113,7 @@ export default async function HomePage() {
               <Sparkles size={13} />
               The academic library for Indian students
             </span>
-            <h1 className="display mt-6 text-balance text-4xl leading-[1.08] text-ink sm:text-6xl">
+            <h1 className="display mt-6 text-balance text-4xl leading-[1.08] text-ink sm:text-5xl lg:text-6xl">
               Find the notes that{" "}
               <span
                 style={{

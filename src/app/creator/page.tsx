@@ -155,7 +155,7 @@ export default async function CreatorPortalPage() {
               <Sparkles size={13} />
               For creators
             </span>
-            <h1 className="display mt-6 text-balance text-4xl leading-[1.08] text-ink sm:text-6xl">
+            <h1 className="display mt-6 text-balance text-4xl leading-[1.08] text-ink sm:text-5xl lg:text-6xl">
               Turn your notes into{" "}
               <span
                 style={{

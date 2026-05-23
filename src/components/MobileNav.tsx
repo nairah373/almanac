@@ -58,16 +58,9 @@ export function MobileNav({ links, signedIn }: Props) {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className={buttonVariants({ variant: "secondary", className: "w-full" })}
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={() => setOpen(false)}
                   className={buttonVariants({ variant: "primary", className: "w-full" })}
                 >
-                  Get started
+                  Sign in
                 </Link>
               </div>
             )}

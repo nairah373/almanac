@@ -1,40 +1,15 @@
 import Link from "next/link";
-import {
-  BadgeCheck,
-  Download,
-  FileQuestion,
-  FileText,
-  FlaskConical,
-  Layers,
-  PenLine,
-  Presentation,
-  Sigma,
-  type LucideIcon,
-} from "lucide-react";
-import type { ResourceType } from "@prisma/client";
+import { BadgeCheck, Download } from "lucide-react";
 import type { ResourceCard as ResourceCardData } from "@/lib/queries";
 import { RESOURCE_TYPE_META } from "@/lib/constants";
+import { RESOURCE_TYPE_STYLE } from "@/lib/resourceTypes";
 import { formatINR, formatNumber } from "@/lib/format";
 import { StarRating } from "@/components/ui/StarRating";
 import { Avatar } from "@/components/ui/Avatar";
 
-// A colour + icon per resource type — gives every card a vivid cover.
-const TYPE_STYLE: Record<
-  ResourceType,
-  { from: string; to: string; icon: LucideIcon }
-> = {
-  HANDWRITTEN: { from: "#fbbf24", to: "#f97316", icon: PenLine },
-  TYPED: { from: "#818cf8", to: "#8b5cf6", icon: FileText },
-  PPT_SUMMARY: { from: "#fb7185", to: "#ec4899", icon: Presentation },
-  LAB_RECORD: { from: "#2dd4bf", to: "#10b981", icon: FlaskConical },
-  PYQ: { from: "#38bdf8", to: "#3b82f6", icon: FileQuestion },
-  FORMULA_SHEET: { from: "#e879f9", to: "#a855f7", icon: Sigma },
-  FLASHCARDS: { from: "#22d3ee", to: "#14b8a6", icon: Layers },
-};
-
 export function ResourceCard({ resource }: { resource: ResourceCardData }) {
   const type = RESOURCE_TYPE_META[resource.resourceType];
-  const style = TYPE_STYLE[resource.resourceType];
+  const style = RESOURCE_TYPE_STYLE[resource.resourceType];
   const CoverIcon = style.icon;
 
   return (

@@ -5,6 +5,11 @@ import type { Metadata } from "next";
 import { BadgeCheck, Eye, GraduationCap } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { AuthForm } from "@/components/AuthForm";
+import {
+  DoodlePlane,
+  DoodleStar,
+  DoodleTrail,
+} from "@/components/Doodles";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +29,10 @@ export default async function SignupPage() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center">
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center">
+      <DoodleTrail className="pointer-events-none absolute right-28 top-20 hidden h-10 w-28 -rotate-[8deg] text-ink/30 lg:block" />
+      <DoodlePlane className="pointer-events-none absolute right-12 top-16 hidden h-8 w-12 -rotate-[20deg] text-ink/80 lg:block" />
+      <DoodleStar className="pointer-events-none absolute bottom-20 left-16 hidden h-7 w-7 text-indigo-500 lg:block" />
       <div className="mx-auto grid w-full max-w-4xl gap-10 px-5 py-16 md:grid-cols-2 md:items-center">
         <div className="hidden md:block">
           <h2 className="display text-3xl text-ink">

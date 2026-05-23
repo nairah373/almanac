@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MailCheck } from "lucide-react";
+import { MailCheck, Wrench } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -35,6 +35,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") || "/dashboard";
+  const role = params.get("role");
 
   const [loading, setLoading] = useState<null | "email" | "google">(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,11 +69,13 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
     try {
       if (mode === "signup") {
+        const metadata: Record<string, string> = { full_name: fullName };
+        if (role === "creator") metadata.role = "CREATOR";
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: metadata,
             emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
           },
         });
@@ -98,6 +101,44 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     } finally {
       setLoading(null);
     }
+  }
+
+  // If the project hasn't been connected to Supabase yet, don't try to call
+  // it — show a friendly notice instead of crashing on click.
+  const isSupabaseReady = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  if (!isSupabaseReady) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+            <Wrench size={16} />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-ink">
+              Sign-in isn&apos;t connected yet
+            </h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Almanac needs a Supabase project to handle accounts. Copy{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs text-amber-800">
+                .env.example
+              </code>{" "}
+              to{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs text-amber-800">
+                .env
+              </code>{" "}
+              and follow{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs text-amber-800">
+                SETUP.md
+              </code>{" "}
+              to connect one.
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              Until then you can still browse the site as a guest.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (emailSent) {

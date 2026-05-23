@@ -35,6 +35,21 @@ export async function uploadPreview(path: string, bytes: Uint8Array): Promise<vo
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Replace the file stored at the originals bucket path — used when an image
+ * upload is converted into a single-page PDF at publish time.
+ */
+export async function uploadOriginal(path: string, bytes: Uint8Array): Promise<void> {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.storage
+    .from(BUCKET_ORIGINALS)
+    .upload(path, new Blob([bytes as BlobPart], { type: "application/pdf" }), {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+  if (error) throw new Error(error.message);
+}
+
 /** Public URL for a preview PDF. */
 export function previewPublicUrl(path: string): string {
   const admin = createSupabaseAdminClient();

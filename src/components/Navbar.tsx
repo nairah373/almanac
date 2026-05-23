@@ -56,6 +56,16 @@ export async function Navbar() {
           ) : (
             <>
               <Link
+                href="/creator"
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                  className: "hidden md:inline-flex",
+                })}
+              >
+                For creators
+              </Link>
+              <Link
                 href="/login"
                 className={buttonVariants({
                   variant: "ghost",

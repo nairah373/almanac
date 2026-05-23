@@ -1,11 +1,12 @@
 /**
  * Centralised, lazily-read environment access.
- * Reads happen inside functions so a missing value never crashes module load
- * (important for `next build` before secrets are configured).
+ *
+ * NEXT_PUBLIC_* vars must be accessed with STATIC `process.env.X` so Next.js
+ * inlines them into the client bundle — dynamic `process.env[name]` access
+ * is never inlined and shows up as `undefined` in the browser.
  */
 
-function need(name: string): string {
-  const value = process.env[name];
+function required(name: string, value: string | undefined): string {
   if (!value) {
     throw new Error(
       `Missing environment variable: ${name}. See .env.example and SETUP.md.`,
@@ -15,12 +16,21 @@ function need(name: string): string {
 }
 
 export const env = {
-  supabaseUrl: () => need("NEXT_PUBLIC_SUPABASE_URL"),
-  supabaseAnonKey: () => need("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  supabaseServiceKey: () => need("SUPABASE_SERVICE_ROLE_KEY"),
-  razorpayKeyId: () => need("RAZORPAY_KEY_ID"),
-  razorpayKeySecret: () => need("RAZORPAY_KEY_SECRET"),
-  razorpayWebhookSecret: () => need("RAZORPAY_WEBHOOK_SECRET"),
+  supabaseUrl: () =>
+    required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
+  supabaseAnonKey: () =>
+    required(
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    ),
+  supabaseServiceKey: () =>
+    required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY),
+  razorpayKeyId: () =>
+    required("RAZORPAY_KEY_ID", process.env.RAZORPAY_KEY_ID),
+  razorpayKeySecret: () =>
+    required("RAZORPAY_KEY_SECRET", process.env.RAZORPAY_KEY_SECRET),
+  razorpayWebhookSecret: () =>
+    required("RAZORPAY_WEBHOOK_SECRET", process.env.RAZORPAY_WEBHOOK_SECRET),
   siteUrl: () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 };
 

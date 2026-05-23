@@ -49,6 +49,13 @@ export function MobileNav({ links, signedIn }: Props) {
             ) : (
               <div className="flex flex-col gap-2">
                 <Link
+                  href="/creator"
+                  onClick={() => setOpen(false)}
+                  className={buttonVariants({ variant: "ghost", className: "w-full" })}
+                >
+                  For creators
+                </Link>
+                <Link
                   href="/login"
                   onClick={() => setOpen(false)}
                   className={buttonVariants({ variant: "secondary", className: "w-full" })}

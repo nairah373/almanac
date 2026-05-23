@@ -48,11 +48,17 @@ export function UploadForm() {
 
   const busy = phase !== "idle";
 
+  const ALLOWED_TYPES = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+  ];
+
   function pickFile(f: File | null) {
     setError(null);
     if (!f) return;
-    if (f.type !== "application/pdf") {
-      setError("Only PDF files are supported.");
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      setError("Only PDF, JPG or PNG files are supported.");
       return;
     }
     if (f.size > MAX_UPLOAD_BYTES) {
@@ -114,7 +120,7 @@ export function UploadForm() {
       const { error: upErr } = await supabase.storage
         .from(BUCKET_ORIGINALS)
         .uploadToSignedUrl(createData.uploadPath, createData.uploadToken, file, {
-          contentType: "application/pdf",
+          contentType: file.type,
         });
       if (upErr) throw new Error(upErr.message);
 
@@ -142,8 +148,9 @@ export function UploadForm() {
       <section className="rounded-2xl border border-line bg-surface p-6">
         <h2 className="text-sm font-semibold text-ink">1 · The document</h2>
         <p className="mt-1 text-xs text-muted">
-          PDF only, up to {formatBytes(MAX_UPLOAD_BYTES)}. The first pages become
-          a free preview.
+          PDF, JPG or PNG — up to {formatBytes(MAX_UPLOAD_BYTES)}. Images are
+          auto-converted to a single-page PDF and the first pages become a free
+          preview.
         </p>
 
         {file ? (
@@ -189,15 +196,17 @@ export function UploadForm() {
           >
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/jpeg,image/png"
               className="hidden"
               onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
             />
             <UploadCloud size={26} className="text-muted" />
             <p className="mt-3 text-sm font-medium text-ink">
-              Drag &amp; drop your PDF here
+              Drag &amp; drop a PDF or image here
             </p>
-            <p className="mt-0.5 text-xs text-faint">or click to browse files</p>
+            <p className="mt-0.5 text-xs text-faint">
+              PDF, JPG or PNG — or click to browse
+            </p>
           </label>
         )}
       </section>

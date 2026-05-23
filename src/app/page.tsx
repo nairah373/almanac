@@ -16,6 +16,16 @@ import { buttonVariants } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { CreatorCard } from "@/components/CreatorCard";
+import {
+  DoodleBolt,
+  DoodleDots,
+  DoodleLoop,
+  DoodlePlane,
+  DoodleSparkle,
+  DoodleSquiggle,
+  DoodleStar,
+  DoodleTrail,
+} from "@/components/Doodles";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +89,26 @@ export default async function HomePage() {
       {/* ─── Hero ─────────────────────────────────────────────── */}
       <section>
         <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="relative mx-auto max-w-3xl text-center">
+            {/* Paper planes + dashed trails flying around the hero */}
+            <DoodleTrail className="pointer-events-none absolute -left-32 -top-2 hidden h-12 w-32 -rotate-6 text-ink/35 lg:block" />
+            <DoodlePlane className="pointer-events-none absolute -left-4 -top-3 hidden h-8 w-12 -rotate-[15deg] text-ink/85 lg:block" />
+
+            <DoodleTrail className="pointer-events-none absolute -right-32 top-0 hidden h-12 w-32 -scale-x-100 -rotate-[8deg] text-ink/35 lg:block" />
+            <DoodlePlane className="pointer-events-none absolute -right-4 top-2 hidden h-8 w-12 rotate-[200deg] text-ink/85 lg:block" />
+
+            <DoodleLoop className="pointer-events-none absolute -left-12 bottom-4 hidden h-12 w-20 text-ink/35 lg:block" />
+
+            <DoodleTrail className="pointer-events-none absolute -right-28 bottom-6 hidden h-12 w-28 -rotate-[15deg] text-ink/35 lg:block" />
+            <DoodlePlane className="pointer-events-none absolute right-2 bottom-24 hidden h-8 w-12 -rotate-[25deg] text-ink/85 lg:block" />
+
+            {/* Sprinkled colourful star-shape doodles */}
+            <DoodleStar className="pointer-events-none absolute -left-2 top-28 hidden h-7 w-7 text-indigo-500 lg:block" />
+            <DoodleSparkle className="pointer-events-none absolute -right-1 top-24 hidden h-6 w-6 text-pink-500 lg:block" />
+            <DoodleDots className="pointer-events-none absolute -right-16 top-1/2 hidden h-7 w-7 text-amber-500 lg:block" />
+            <DoodleBolt className="pointer-events-none absolute -left-2 bottom-32 hidden h-7 w-7 text-violet-500 lg:block" />
+            <DoodleSparkle className="pointer-events-none absolute -left-20 top-1/2 hidden h-5 w-5 text-sky-500 lg:block" />
+            <DoodleStar className="pointer-events-none absolute -right-2 bottom-40 hidden h-6 w-6 text-emerald-500 lg:block" />
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-3 py-1 text-xs font-medium text-indigo-700">
               <Sparkles size={13} />
               The academic library for Indian students
@@ -98,6 +127,7 @@ export default async function HomePage() {
                 actually get you through exams.
               </span>
             </h1>
+            <DoodleSquiggle className="mx-auto mt-2 h-3.5 w-40 text-violet-500" />
             <p className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted sm:text-lg">
               {APP_NAME} is a trusted marketplace for high-quality study
               material — handwritten notes, PYQs, formula sheets and more, from

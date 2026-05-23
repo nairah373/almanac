@@ -37,6 +37,61 @@ export async function generatePreviewPdf(
   return { bytes, pageCount };
 }
 
+/** Detect the file's true format by reading its magic bytes. */
+export function detectFileKind(
+  bytes: Uint8Array,
+): "pdf" | "png" | "jpeg" | "unknown" {
+  if (bytes.length < 4) return "unknown";
+  if (
+    bytes[0] === 0x25 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x44 &&
+    bytes[3] === 0x46
+  ) {
+    return "pdf"; // %PDF
+  }
+  if (
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return "png";
+  }
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "jpeg";
+  }
+  return "unknown";
+}
+
+/**
+ * Wrap a JPEG or PNG image in a single-page PDF so it can flow through the
+ * same preview + watermark pipeline as native PDF uploads.
+ */
+export async function imageToPdf(
+  imageBytes: Uint8Array,
+  kind: "png" | "jpeg",
+): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const img =
+    kind === "png"
+      ? await doc.embedPng(imageBytes)
+      : await doc.embedJpg(imageBytes);
+
+  // Cap the page dimensions so a very-high-res photo doesn't make the PDF huge.
+  const maxDim = 2000;
+  let { width, height } = img.size();
+  if (width > maxDim || height > maxDim) {
+    const scale = Math.min(maxDim / width, maxDim / height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const page = doc.addPage([width, height]);
+  page.drawImage(img, { x: 0, y: 0, width, height });
+  return doc.save();
+}
+
 /**
  * Stamp a buyer-identity watermark along the bottom of every page so a
  * leaked copy is traceable. Returns the watermarked PDF bytes.

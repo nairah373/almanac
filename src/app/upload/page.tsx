@@ -13,10 +13,19 @@ export const metadata: Metadata = {
 };
 
 const GUIDELINES = [
-  { icon: Eye, text: "The first 3 pages become a free preview for buyers." },
-  { icon: IndianRupee, text: "You keep 85% of every sale — paid out per order." },
+  {
+    icon: Eye,
+    tile: "bg-indigo-100 text-indigo-600",
+    text: "First 3 pages auto-generate as a free preview.",
+  },
+  {
+    icon: IndianRupee,
+    tile: "bg-emerald-100 text-emerald-600",
+    text: "You keep 85% of every sale — paid out per order.",
+  },
   {
     icon: Fingerprint,
+    tile: "bg-amber-100 text-amber-600",
     text: "Downloads are watermarked with the buyer's identity.",
   },
 ];
@@ -35,10 +44,17 @@ export default async function UploadPage() {
       />
 
       <div className="mx-auto max-w-3xl px-5 py-10">
-        <div className="grid gap-3 rounded-2xl border border-line bg-surface-2 p-4 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           {GUIDELINES.map((g) => (
-            <div key={g.text} className="flex items-start gap-2.5">
-              <g.icon size={16} className="mt-0.5 shrink-0 text-gold" />
+            <div
+              key={g.text}
+              className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4"
+            >
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${g.tile}`}
+              >
+                <g.icon size={16} strokeWidth={1.75} />
+              </div>
               <span className="text-xs leading-relaxed text-ink-soft">
                 {g.text}
               </span>

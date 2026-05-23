@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 import { apiError, apiOk, requireApiProfile } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
-import { downloadOriginal, uploadPreview } from "@/lib/storage";
-import { generatePreviewPdf } from "@/lib/pdf";
+import { downloadOriginal, uploadOriginal, uploadPreview } from "@/lib/storage";
+import { detectFileKind, generatePreviewPdf, imageToPdf } from "@/lib/pdf";
 import { PREVIEW_PAGE_COUNT } from "@/lib/constants";
 
 /**
@@ -36,15 +36,42 @@ export async function POST(
     );
   }
 
+  // Image uploads get wrapped into a single-page PDF so previews + watermarked
+  // downloads keep working through one code path.
+  const kind = detectFileKind(original);
+  let pdfBytes: Uint8Array;
+  if (kind === "pdf") {
+    pdfBytes = original;
+  } else if (kind === "png" || kind === "jpeg") {
+    try {
+      pdfBytes = await imageToPdf(original, kind);
+    } catch {
+      return apiError(
+        "We couldn't process that image — try a smaller JPG or PNG.",
+        400,
+      );
+    }
+    try {
+      await uploadOriginal(resource.originalKey, pdfBytes);
+    } catch (err) {
+      return apiError(
+        err instanceof Error ? err.message : "Could not store the file.",
+        500,
+      );
+    }
+  } else {
+    return apiError("Only PDF, JPG and PNG files are supported.", 400);
+  }
+
   let previewBytes: Uint8Array;
   let pageCount: number;
   try {
-    const preview = await generatePreviewPdf(original, PREVIEW_PAGE_COUNT);
+    const preview = await generatePreviewPdf(pdfBytes, PREVIEW_PAGE_COUNT);
     previewBytes = preview.bytes;
     pageCount = preview.pageCount;
   } catch {
     return apiError(
-      "That file isn't a readable PDF. Please upload a valid PDF document.",
+      "We couldn't generate the preview from that file.",
       400,
     );
   }
@@ -65,7 +92,7 @@ export async function POST(
       status: "PUBLISHED",
       previewKey,
       pageCount,
-      fileSizeBytes: original.length,
+      fileSizeBytes: pdfBytes.length,
     },
   });
 

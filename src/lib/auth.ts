@@ -46,10 +46,17 @@ export async function ensureProfile(user: User): Promise<Profile> {
   const username = await uniqueUsername(
     (meta.user_name as string) || email.split("@")[0],
   );
+  const metaRole = typeof meta.role === "string" ? meta.role : "";
+  const role: "STUDENT" | "CREATOR" | "COACHING" =
+    metaRole === "CREATOR"
+      ? "CREATOR"
+      : metaRole === "COACHING"
+        ? "COACHING"
+        : "STUDENT";
 
   try {
     return await prisma.profile.create({
-      data: { id: user.id, email, fullName, username, avatarUrl },
+      data: { id: user.id, email, fullName, username, avatarUrl, role },
     });
   } catch {
     // Lost a creation race — the row now exists.

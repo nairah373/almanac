@@ -75,12 +75,6 @@ export async function Navbar() {
               >
                 Sign in
               </Link>
-              <Link
-                href="/signup"
-                className={buttonVariants({ variant: "primary", size: "sm" })}
-              >
-                Get started
-              </Link>
             </>
           )}
           <MobileNav links={NAV_LINKS} signedIn={Boolean(profile)} />

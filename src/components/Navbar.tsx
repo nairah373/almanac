@@ -60,7 +60,7 @@ export async function Navbar() {
                 className={buttonVariants({
                   variant: "ghost",
                   size: "sm",
-                  className: "hidden md:inline-flex",
+                  className: "hidden lg:inline-flex",
                 })}
               >
                 For creators
@@ -70,7 +70,7 @@ export async function Navbar() {
                 className={buttonVariants({
                   variant: "ghost",
                   size: "sm",
-                  className: "hidden sm:inline-flex",
+                  className: "hidden md:inline-flex",
                 })}
               >
                 Sign in

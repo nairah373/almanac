@@ -45,6 +45,9 @@
   html,
   body {
     height: 100%;
+    /* Clip horizontal overflow at the document root too, so off-canvas
+       decorative elements never produce a horizontal scrollbar. */
+    overflow-x: clip;
   }
 
   body {

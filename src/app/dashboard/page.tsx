@@ -10,13 +10,12 @@ import {
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import {
-  getCreatorEarnings,
   getCreatorStats,
   getUserLibrary,
   getUserUploads,
 } from "@/lib/queries";
 import { RESOURCE_TYPE_META } from "@/lib/constants";
-import { formatDate, formatINR, formatNumber } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import { tierOf } from "@/lib/reputation";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
@@ -169,33 +168,31 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 async function UploadsTab({ userId }: { userId: string }) {
-  const [uploads, earnings] = await Promise.all([
-    getUserUploads(userId),
-    getCreatorEarnings(userId),
-  ]);
+  const uploads = await getUserUploads(userId);
   const totalDownloads = uploads.reduce((s, r) => s + r.downloadCount, 0);
+  const totalStudents = uploads.reduce((s, r) => s + r._count.purchases, 0);
   const published = uploads.filter((r) => r.status === "PUBLISHED").length;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          label="Total earnings"
-          value={formatINR(earnings.totalEarningInPaise)}
-        />
-        <StatCard label="Paid sales" value={formatNumber(earnings.salesCount)} />
+        <StatCard label="Resources" value={formatNumber(uploads.length)} />
+        <StatCard label="Published" value={formatNumber(published)} />
         <StatCard
           label="Total downloads"
           value={formatNumber(totalDownloads)}
         />
-        <StatCard label="Published" value={formatNumber(published)} />
+        <StatCard
+          label="Students reached"
+          value={formatNumber(totalStudents)}
+        />
       </div>
 
       {uploads.length === 0 ? (
         <EmptyState
           icon={Upload}
           title="No uploads yet"
-          description="Share your first resource and start earning from your notes."
+          description="Share your first resource and help students across India."
           action={
             <Link href="/upload" className={buttonVariants({ size: "sm" })}>
               Upload a resource
@@ -230,9 +227,9 @@ async function UploadsTab({ userId }: { userId: string }) {
                   </Badge>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-faint">
-                  {r.isFree ? "Free" : formatINR(r.priceInPaise)} ·{" "}
-                  {formatNumber(r.downloadCount)} downloads ·{" "}
-                  {r._count.purchases} sales · {r._count.reviews} reviews
+                  Free · {formatNumber(r.downloadCount)} downloads ·{" "}
+                  {formatNumber(r._count.purchases)} students ·{" "}
+                  {r._count.reviews} reviews
                 </p>
               </div>
               <Link
@@ -248,8 +245,8 @@ async function UploadsTab({ userId }: { userId: string }) {
       )}
 
       <p className="text-xs text-faint">
-        Earnings reflect your 85% share of completed sales. Connecting a payout
-        method is part of the upcoming creator-payouts release.
+        Everything you share on Almanac is free for students. Your downloads,
+        ratings and followers build your reputation across colleges.
       </p>
     </div>
   );

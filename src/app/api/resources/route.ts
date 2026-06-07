@@ -5,8 +5,7 @@ import { z } from "zod";
 import { apiError, apiOk, requireApiProfile } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { createOriginalUploadUrl } from "@/lib/storage";
-import { MAX_PRICE_INR, MAX_UPLOAD_BYTES, MIN_PRICE_INR } from "@/lib/constants";
-import { rupeesToPaise } from "@/lib/format";
+import { MAX_UPLOAD_BYTES } from "@/lib/constants";
 
 const schema = z.object({
   title: z.string().trim().min(6).max(140),
@@ -18,8 +17,9 @@ const schema = z.object({
   subject: z.string().trim().min(2).max(120),
   moduleName: z.string().trim().max(120).optional(),
   examType: z.string().trim().max(80).optional(),
-  isFree: z.boolean(),
-  priceInRupees: z.number().int().min(0).max(MAX_PRICE_INR).optional(),
+  // Pricing fields are accepted but ignored — Almanac is free for students.
+  isFree: z.boolean().optional(),
+  priceInRupees: z.number().int().optional(),
   fileSizeBytes: z.number().int().positive().max(MAX_UPLOAD_BYTES),
 });
 
@@ -44,15 +44,6 @@ export async function POST(request: NextRequest) {
   }
   const input = parsed.data;
 
-  let priceInPaise = 0;
-  if (!input.isFree) {
-    const rupees = input.priceInRupees ?? 0;
-    if (rupees < MIN_PRICE_INR) {
-      return apiError(`Paid resources must cost at least ₹${MIN_PRICE_INR}.`);
-    }
-    priceInPaise = rupeesToPaise(rupees);
-  }
-
   const originalKey = `${auth.profile.id}/${randomUUID()}.pdf`;
 
   const resource = await prisma.resource.create({
@@ -66,8 +57,8 @@ export async function POST(request: NextRequest) {
       subject: input.subject,
       moduleName: input.moduleName || null,
       examType: input.examType || null,
-      isFree: input.isFree,
-      priceInPaise,
+      isFree: true,
+      priceInPaise: 0,
       fileSizeBytes: input.fileSizeBytes,
       originalKey,
       status: "DRAFT",

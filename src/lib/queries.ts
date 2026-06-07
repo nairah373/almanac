@@ -91,10 +91,6 @@ function sortCards(items: ResourceCard[], sort: SortValue): ResourceCard[] {
       return c.sort(
         (a, b) => b.avgRating - a.avgRating || b.reviewCount - a.reviewCount,
       );
-    case "price_low":
-      return c.sort((a, b) => a.priceInPaise - b.priceInPaise);
-    case "price_high":
-      return c.sort((a, b) => b.priceInPaise - a.priceInPaise);
     default:
       return c.sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),

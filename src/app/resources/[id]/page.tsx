@@ -203,20 +203,16 @@ export default async function ResourcePage({
         {/* ── Purchase / trust card ────────────────────────── */}
         <aside className="order-1 lg:order-2 lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-card">
-            <p className="text-3xl font-semibold text-ink">
-              {resource.isFree ? "Free" : `₹${resource.priceInPaise / 100}`}
-            </p>
+            <p className="text-3xl font-semibold text-ink">Free</p>
             <p className="mt-0.5 text-xs text-faint">
-              {resource.isFree
-                ? "Download at no cost"
-                : "One-time purchase · lifetime access"}
+              Free for every student · lifetime access
             </p>
 
             <div className="mt-4">
               <BuyButton
                 resourceId={resource.id}
-                isFree={resource.isFree}
-                priceInPaise={resource.priceInPaise}
+                isFree={true}
+                priceInPaise={0}
                 isSignedIn={!!viewer}
                 hasAccess={hasAccess}
               />

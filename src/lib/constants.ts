@@ -110,8 +110,6 @@ export const SORT_OPTIONS = [
   { value: "recent", label: "Most recent" },
   { value: "popular", label: "Most downloaded" },
   { value: "rating", label: "Highest rated" },
-  { value: "price_low", label: "Price: low to high" },
-  { value: "price_high", label: "Price: high to low" },
 ] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number]["value"];

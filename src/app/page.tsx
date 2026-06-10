@@ -11,11 +11,17 @@ import {
   Upload,
 } from "lucide-react";
 import { APP_NAME, UNIVERSITIES } from "@/lib/constants";
-import { getFeaturedResources, getTopCreators } from "@/lib/queries";
+import {
+  getActiveSubscription,
+  getFeaturedResources,
+  getTopCreators,
+} from "@/lib/queries";
+import { getCurrentProfile } from "@/lib/auth";
 import { buttonVariants } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { CreatorCard } from "@/components/CreatorCard";
+import { PricingPlans } from "@/components/PricingPlans";
 import {
   DoodleBolt,
   DoodleDots,
@@ -79,10 +85,14 @@ const TRUST = [
 ];
 
 export default async function HomePage() {
-  const [featured, topCreators] = await Promise.all([
+  const [featured, topCreators, profile] = await Promise.all([
     getFeaturedResources(6).catch(() => []),
     getTopCreators(4).catch(() => []),
+    getCurrentProfile().catch(() => null),
   ]);
+  const subscription = profile
+    ? await getActiveSubscription(profile.id).catch(() => null)
+    : null;
 
   return (
     <div>
@@ -172,6 +182,27 @@ export default async function HomePage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* ─── Subscription plans ───────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-5 py-12">
+        <SectionHeading
+          eyebrow="Almanac Premium"
+          title="One subscription. Every note."
+          description="Subscribe once and download anything — handwritten notes, PYQs, formula sheets and more. No per-note charges, no limits."
+        />
+        <div className="mt-8">
+          <PricingPlans
+            isSignedIn={!!profile}
+            currentPlan={subscription?.plan ?? null}
+          />
+        </div>
+        <p className="mt-6 text-center text-xs text-faint">
+          Renew anytime · Secure payments by Razorpay ·{" "}
+          <Link href="/pricing" className="underline hover:text-ink">
+            See full plan details
+          </Link>
+        </p>
       </section>
 
       {/* ─── How it works ─────────────────────────────────────── */}

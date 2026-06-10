@@ -3,7 +3,7 @@ import { BadgeCheck, Download } from "lucide-react";
 import type { ResourceCard as ResourceCardData } from "@/lib/queries";
 import { RESOURCE_TYPE_META } from "@/lib/constants";
 import { RESOURCE_TYPE_STYLE } from "@/lib/resourceTypes";
-import { formatINR, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 import { StarRating } from "@/components/ui/StarRating";
 import { Avatar } from "@/components/ui/Avatar";
 
@@ -31,7 +31,7 @@ export function ResourceCard({ resource }: { resource: ResourceCardData }) {
             {type.short}
           </span>
           <span className="absolute right-3 top-3 rounded-full bg-ink/85 px-2.5 py-0.5 text-[11px] font-semibold text-white">
-            {resource.isFree ? "Free" : formatINR(resource.priceInPaise)}
+            Premium
           </span>
         </div>
 

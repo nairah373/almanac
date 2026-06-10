@@ -3,24 +3,21 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   BookOpen,
+  Crown,
   Download,
   FileText,
   Library,
   Upload,
-  Wallet,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import {
-  getCreatorBalance,
-  getCreatorEarnings,
+  getActiveSubscription,
   getCreatorStats,
-  getPayoutAccount,
-  getPayouts,
   getUserLibrary,
   getUserUploads,
 } from "@/lib/queries";
-import { RESOURCE_TYPE_META } from "@/lib/constants";
-import { formatDate, formatINR, formatNumber } from "@/lib/format";
+import { RESOURCE_TYPE_META, SUBSCRIPTION_PLANS } from "@/lib/constants";
+import { formatDate, formatNumber } from "@/lib/format";
 import { tierOf } from "@/lib/reputation";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
@@ -30,7 +27,6 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { PageHero } from "@/components/PageHero";
 import { DeleteResourceButton } from "@/components/DeleteResourceButton";
-import { PayoutPanel } from "@/components/PayoutPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +35,6 @@ export const metadata: Metadata = { title: "Dashboard" };
 const TABS = [
   { id: "library", label: "My library", icon: Library },
   { id: "uploads", label: "My uploads", icon: Upload },
-  { id: "payouts", label: "Earnings", icon: Wallet },
 ] as const;
 
 export default async function DashboardPage({
@@ -51,14 +46,12 @@ export default async function DashboardPage({
   if (!profile) redirect("/login?next=/dashboard");
 
   const sp = await searchParams;
-  const tab =
-    sp.tab === "uploads"
-      ? "uploads"
-      : sp.tab === "payouts"
-        ? "payouts"
-        : "library";
+  const tab = sp.tab === "uploads" ? "uploads" : "library";
 
-  const stats = await getCreatorStats(profile.id);
+  const [stats, subscription] = await Promise.all([
+    getCreatorStats(profile.id),
+    getActiveSubscription(profile.id),
+  ]);
   const tier = tierOf(stats);
 
   return (
@@ -84,6 +77,54 @@ export default async function DashboardPage({
       </PageHero>
 
       <div className="mx-auto max-w-5xl px-5 py-8">
+        <div className="mb-6">
+          {subscription ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/30 bg-gold/8 p-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/15 text-gold">
+                  <Crown size={18} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">
+                    {SUBSCRIPTION_PLANS[subscription.plan].label} plan · active
+                  </p>
+                  <p className="text-xs text-muted">
+                    Unlimited downloads until{" "}
+                    {subscription.currentPeriodEnd
+                      ? formatDate(subscription.currentPeriodEnd)
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/pricing"
+                className={buttonVariants({ variant: "secondary", size: "sm" })}
+              >
+                Renew or change
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-muted">
+                  <Crown size={18} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">
+                    No active subscription
+                  </p>
+                  <p className="text-xs text-muted">
+                    Subscribe to download any note on Almanac.
+                  </p>
+                </div>
+              </div>
+              <Link href="/pricing" className={buttonVariants({ size: "sm" })}>
+                View plans
+              </Link>
+            </div>
+          )}
+        </div>
+
         <nav className="flex gap-1 overflow-x-auto border-b border-line no-scrollbar">
           {TABS.map((t) => {
             const active = t.id === tab;
@@ -108,7 +149,6 @@ export default async function DashboardPage({
         <div className="mt-7">
           {tab === "library" && <LibraryTab userId={profile.id} />}
           {tab === "uploads" && <UploadsTab userId={profile.id} />}
-          {tab === "payouts" && <PayoutsTab userId={profile.id} />}
         </div>
       </div>
     </div>
@@ -181,33 +221,31 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 async function UploadsTab({ userId }: { userId: string }) {
-  const [uploads, earnings] = await Promise.all([
-    getUserUploads(userId),
-    getCreatorEarnings(userId),
-  ]);
+  const uploads = await getUserUploads(userId);
   const totalDownloads = uploads.reduce((s, r) => s + r.downloadCount, 0);
+  const totalStudents = uploads.reduce((s, r) => s + r._count.purchases, 0);
   const published = uploads.filter((r) => r.status === "PUBLISHED").length;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          label="Total earnings"
-          value={formatINR(earnings.totalEarningInPaise)}
-        />
-        <StatCard label="Paid sales" value={formatNumber(earnings.salesCount)} />
+        <StatCard label="Resources" value={formatNumber(uploads.length)} />
+        <StatCard label="Published" value={formatNumber(published)} />
         <StatCard
           label="Total downloads"
           value={formatNumber(totalDownloads)}
         />
-        <StatCard label="Published" value={formatNumber(published)} />
+        <StatCard
+          label="Students reached"
+          value={formatNumber(totalStudents)}
+        />
       </div>
 
       {uploads.length === 0 ? (
         <EmptyState
           icon={Upload}
           title="No uploads yet"
-          description="Share your first resource and start earning from your notes."
+          description="Share your first resource and help students across India."
           action={
             <Link href="/upload" className={buttonVariants({ size: "sm" })}>
               Upload a resource
@@ -242,9 +280,9 @@ async function UploadsTab({ userId }: { userId: string }) {
                   </Badge>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-faint">
-                  {r.isFree ? "Free" : formatINR(r.priceInPaise)} ·{" "}
                   {formatNumber(r.downloadCount)} downloads ·{" "}
-                  {r._count.purchases} sales · {r._count.reviews} reviews
+                  {formatNumber(r._count.purchases)} students ·{" "}
+                  {r._count.reviews} reviews
                 </p>
               </div>
               <Link
@@ -260,53 +298,9 @@ async function UploadsTab({ userId }: { userId: string }) {
       )}
 
       <p className="text-xs text-faint">
-        Earnings reflect your 85% share of completed sales. Add a payout method
-        and withdraw your balance from the{" "}
-        <Link href="/dashboard?tab=payouts" className="underline hover:text-ink">
-          Earnings
-        </Link>{" "}
-        tab.
+        Notes you share are unlocked for subscribed students across India. Your
+        downloads, ratings and followers build your reputation.
       </p>
     </div>
-  );
-}
-
-async function PayoutsTab({ userId }: { userId: string }) {
-  const [balance, account, payouts] = await Promise.all([
-    getCreatorBalance(userId),
-    getPayoutAccount(userId),
-    getPayouts(userId),
-  ]);
-
-  return (
-    <PayoutPanel
-      balance={{
-        availableInPaise: balance.availableInPaise,
-        pendingInPaise: balance.pendingInPaise,
-        paidOutInPaise: balance.paidOutInPaise,
-        lifetimeInPaise: balance.lifetimeInPaise,
-      }}
-      account={
-        account
-          ? {
-              method: account.method,
-              holderName: account.holderName,
-              upiId: account.upiId,
-              accountNumber: account.accountNumber,
-              ifsc: account.ifsc,
-              bankName: account.bankName,
-            }
-          : null
-      }
-      payouts={payouts.map((p) => ({
-        id: p.id,
-        amountInPaise: p.amountInPaise,
-        status: p.status,
-        destination: p.destination,
-        reference: p.reference,
-        note: p.note,
-        createdAt: p.createdAt,
-      }))}
-    />
   );
 }

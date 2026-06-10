@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { apiError, requireApiProfile } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
+import { hasActiveSubscription } from "@/lib/queries";
 import { downloadOriginal } from "@/lib/storage";
 import { watermarkPdf } from "@/lib/pdf";
 
@@ -30,37 +31,39 @@ export async function GET(
   if (!resource) return apiError("Resource not found.", 404);
 
   const isOwner = resource.creatorId === auth.profile.id;
-  const purchase = await prisma.purchase.findUnique({
-    where: { buyerId_resourceId: { buyerId: auth.profile.id, resourceId: id } },
-  });
-  const hasAccess =
-    Boolean(purchase) &&
-    (purchase!.status === "PAID" || purchase!.status === "FREE");
 
-  if (!isOwner && !hasAccess) {
-    // Allow a free, still-published resource to be claimed on the fly.
-    if (resource.isFree && resource.status === "PUBLISHED") {
+  // Access requires ownership or an active subscription.
+  if (!isOwner) {
+    if (resource.status !== "PUBLISHED") {
+      return apiError("This resource is not available.", 404);
+    }
+    const subscribed = await hasActiveSubscription(auth.profile.id);
+    if (!subscribed) {
+      return apiError("Subscribe to download this resource.", 403);
+    }
+
+    // Record the download in the student's library (once) and bump the count.
+    const existing = await prisma.purchase.findUnique({
+      where: {
+        buyerId_resourceId: { buyerId: auth.profile.id, resourceId: id },
+      },
+    });
+    if (!existing) {
       await prisma.$transaction([
-        prisma.purchase.upsert({
-          where: {
-            buyerId_resourceId: { buyerId: auth.profile.id, resourceId: id },
-          },
-          create: {
+        prisma.purchase.create({
+          data: {
             buyerId: auth.profile.id,
             resourceId: id,
             creatorId: resource.creatorId,
             status: "FREE",
             amountInPaise: 0,
           },
-          update: { status: "FREE" },
         }),
         prisma.resource.update({
           where: { id },
           data: { downloadCount: { increment: 1 } },
         }),
       ]);
-    } else {
-      return apiError("Purchase this resource to download it.", 403);
     }
   }
 

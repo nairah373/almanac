@@ -16,8 +16,18 @@ export const PLATFORM_COMMISSION_RATE = 0.15;
 export const MIN_PRICE_INR = 10;
 export const MAX_PRICE_INR = 2000;
 
-/** Minimum balance (in rupees) a creator must have to request a payout. */
-export const MIN_PAYOUT_INR = 100;
+/**
+ * Subscription plans. Access to every resource is unlocked while a student has
+ * an active subscription. Prices are in paise (₹1 = 100 paise).
+ */
+export const SUBSCRIPTION_PLANS = {
+  MONTHLY: { label: "Monthly", months: 1, priceInPaise: 9900, tagline: "Billed once a month" },
+  SIX_MONTH: { label: "6 months", months: 6, priceInPaise: 49900, tagline: "Save vs monthly" },
+  YEARLY: { label: "Yearly", months: 12, priceInPaise: 89900, tagline: "Best value" },
+} as const;
+
+export type PlanKey = keyof typeof SUBSCRIPTION_PLANS;
+export const PLAN_KEYS = Object.keys(SUBSCRIPTION_PLANS) as PlanKey[];
 
 /** Number of leading pages exposed in the public preview PDF. */
 export const PREVIEW_PAGE_COUNT = 3;
@@ -113,8 +123,6 @@ export const SORT_OPTIONS = [
   { value: "recent", label: "Most recent" },
   { value: "popular", label: "Most downloaded" },
   { value: "rating", label: "Highest rated" },
-  { value: "price_low", label: "Price: low to high" },
-  { value: "price_high", label: "Price: high to low" },
 ] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number]["value"];

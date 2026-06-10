@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Eye, Fingerprint, IndianRupee } from "lucide-react";
+import { Eye, Fingerprint, Crown } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import { UploadForm } from "@/components/UploadForm";
 import { PageHero } from "@/components/PageHero";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Upload a resource",
-  description: "Share your study notes and earn from every download.",
+  description: "Share your study notes and reach students across India.",
 };
 
 const GUIDELINES = [
@@ -19,14 +19,14 @@ const GUIDELINES = [
     text: "First 3 pages auto-generate as a free preview.",
   },
   {
-    icon: IndianRupee,
+    icon: Crown,
     tile: "bg-emerald-100 text-emerald-600",
-    text: "You keep 85% of every sale — paid out per order.",
+    text: "Unlocked for every subscribed student on Almanac.",
   },
   {
     icon: Fingerprint,
     tile: "bg-amber-100 text-amber-600",
-    text: "Downloads are watermarked with the buyer's identity.",
+    text: "Downloads are watermarked with the student's identity.",
   },
 ];
 

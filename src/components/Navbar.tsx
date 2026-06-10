@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/Button";
 const NAV_LINKS = [
   { href: "/browse", label: "Browse" },
   { href: "/creators", label: "Top Creators" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export async function Navbar() {

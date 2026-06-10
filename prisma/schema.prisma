@@ -41,16 +41,16 @@ enum PurchaseStatus {
   FREE
 }
 
-enum PayoutMethod {
-  UPI
-  BANK
+enum SubscriptionPlan {
+  MONTHLY
+  SIX_MONTH
+  YEARLY
 }
 
-enum PayoutStatus {
-  REQUESTED
-  PROCESSING
-  PAID
-  REJECTED
+enum SubscriptionStatus {
+  CREATED
+  ACTIVE
+  EXPIRED
 }
 
 /// A user account. id is the Supabase auth user UUID.
@@ -72,10 +72,9 @@ model Profile {
   purchases     Purchase[]     @relation("BuyerPurchases")
   sales         Purchase[]     @relation("CreatorSales")
   reviews       Review[]
-  following      Follow[]       @relation("Follower")
-  followers      Follow[]       @relation("Creator")
-  payoutAccount PayoutAccount?
-  payouts       Payout[]       @relation("CreatorPayouts")
+  following     Follow[]       @relation("Follower")
+  followers     Follow[]       @relation("Creator")
+  subscriptions Subscription[]
 }
 
 /// An uploaded study resource (note, PYQ, formula sheet, etc.).
@@ -166,38 +165,22 @@ model Follow {
   @@index([creatorId])
 }
 
-/// A creator's saved payout destination (UPI or bank). One per profile.
-model PayoutAccount {
-  id            String       @id @default(cuid())
-  method        PayoutMethod
-  holderName    String
-  upiId         String?
-  accountNumber String?
-  ifsc          String?
-  bankName      String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+/// A student's subscription. While ACTIVE and currentPeriodEnd is in the
+/// future, the student can download any resource. Renewals extend the period.
+model Subscription {
+  id                String             @id @default(cuid())
+  plan              SubscriptionPlan
+  status            SubscriptionStatus @default(CREATED)
+  amountInPaise     Int                @default(0)
+  startedAt         DateTime?
+  currentPeriodEnd  DateTime?
+  razorpayOrderId   String?            @unique
+  razorpayPaymentId String?
+  createdAt         DateTime           @default(now())
 
-  profileId String  @unique @db.Uuid
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-}
+  userId String  @db.Uuid
+  user   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-/// A withdrawal request from a creator. While REQUESTED/PROCESSING/PAID it
-/// reserves part of the creator's earned balance; REJECTED frees it again.
-model Payout {
-  id            String       @id @default(cuid())
-  amountInPaise Int
-  status        PayoutStatus @default(REQUESTED)
-  method        PayoutMethod
-  destination   String // snapshot of the UPI id / masked account at request time
-  note          String? // admin note or rejection reason
-  reference     String? // bank/UPI reference once paid out
-  createdAt     DateTime     @default(now())
-  processedAt   DateTime?
-
-  creatorId String  @db.Uuid
-  creator   Profile @relation("CreatorPayouts", fields: [creatorId], references: [id], onDelete: Cascade)
-
-  @@index([creatorId])
-  @@index([status, createdAt])
+  @@index([userId, status])
+  @@index([currentPeriodEnd])
 }

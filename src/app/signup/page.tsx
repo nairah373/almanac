@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 };
 
 const PERKS = [
-  { icon: Eye, text: "Preview every resource before you pay" },
-  { icon: BadgeCheck, text: "Buy only from verified student creators" },
-  { icon: GraduationCap, text: "Upload your own notes and start earning" },
+  { icon: Eye, text: "Preview every resource before you download" },
+  { icon: BadgeCheck, text: "Unlimited downloads with one subscription" },
+  { icon: GraduationCap, text: "Upload your own notes to help students" },
 ];
 
 export default async function SignupPage() {

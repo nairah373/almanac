@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   BadgeCheck,
+  Crown,
   Download,
   Fingerprint,
   FileText,
@@ -14,17 +15,18 @@ import {
   getCreatorStats,
   getResourceDetail,
   getUserPurchase,
+  hasActiveSubscription,
 } from "@/lib/queries";
 import { previewPublicUrl } from "@/lib/storage";
 import { RESOURCE_TYPE_META } from "@/lib/constants";
 import { formatDate, formatNumber } from "@/lib/format";
 import { tierOf } from "@/lib/reputation";
 import { Badge } from "@/components/ui/Badge";
+import { buttonVariants } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { StarRating } from "@/components/ui/StarRating";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { PdfPreview } from "@/components/PdfPreview";
-import { BuyButton } from "@/components/BuyButton";
 import { ReviewForm } from "@/components/ReviewForm";
 import { PageHero } from "@/components/PageHero";
 
@@ -59,9 +61,11 @@ export default async function ResourcePage({
   const isOwner = viewer?.id === resource.creatorId;
   const purchase =
     viewer && !isOwner ? await getUserPurchase(viewer.id, id) : null;
-  const hasPurchase =
+  const hasDownloaded =
     !!purchase && (purchase.status === "PAID" || purchase.status === "FREE");
-  const hasAccess = isOwner || hasPurchase;
+  const subscribed =
+    viewer && !isOwner ? await hasActiveSubscription(viewer.id) : false;
+  const hasAccess = isOwner || subscribed;
 
   const existingReview = viewer
     ? resource.reviews.find((r) => r.authorId === viewer.id)
@@ -147,7 +151,7 @@ export default async function ResourcePage({
               Reviews ({resource.reviewCount})
             </h2>
 
-            {hasPurchase && (
+            {hasDownloaded && (
               <div className="mt-4">
                 <ReviewForm
                   resourceId={resource.id}
@@ -203,27 +207,45 @@ export default async function ResourcePage({
         {/* ── Purchase / trust card ────────────────────────── */}
         <aside className="order-1 lg:order-2 lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-card">
-            <p className="text-3xl font-semibold text-ink">
-              {resource.isFree ? "Free" : `₹${resource.priceInPaise / 100}`}
-            </p>
-            <p className="mt-0.5 text-xs text-faint">
-              {resource.isFree
-                ? "Download at no cost"
-                : "One-time purchase · lifetime access"}
+            <div className="flex items-center gap-2">
+              <Crown size={18} className="text-gold" />
+              <p className="text-sm font-semibold text-ink">Premium resource</p>
+            </div>
+            <p className="mt-1 text-xs text-faint">
+              Included with any Almanac subscription.
             </p>
 
             <div className="mt-4">
-              <BuyButton
-                resourceId={resource.id}
-                isFree={resource.isFree}
-                priceInPaise={resource.priceInPaise}
-                isSignedIn={!!viewer}
-                hasAccess={hasAccess}
-              />
+              {hasAccess ? (
+                <a
+                  href={`/api/download/${resource.id}`}
+                  className={buttonVariants({ size: "lg", className: "w-full" })}
+                >
+                  <Download size={16} />
+                  Download resource
+                </a>
+              ) : viewer ? (
+                <Link
+                  href="/pricing"
+                  className={buttonVariants({ size: "lg", className: "w-full" })}
+                >
+                  <Crown size={16} />
+                  Subscribe to download
+                </Link>
+              ) : (
+                <Link
+                  href={`/login?next=/resources/${resource.id}`}
+                  className={buttonVariants({ size: "lg", className: "w-full" })}
+                >
+                  Sign in to download
+                </Link>
+              )}
             </div>
             {hasAccess && (
               <p className="mt-2 text-center text-xs text-success">
-                {isOwner ? "This is your resource." : "In your library."}
+                {isOwner
+                  ? "This is your resource."
+                  : "Included in your subscription."}
               </p>
             )}
 

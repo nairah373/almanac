@@ -16,6 +16,9 @@ export const PLATFORM_COMMISSION_RATE = 0.15;
 export const MIN_PRICE_INR = 10;
 export const MAX_PRICE_INR = 2000;
 
+/** Minimum balance (in rupees) a creator must have to request a payout. */
+export const MIN_PAYOUT_INR = 100;
+
 /** Number of leading pages exposed in the public preview PDF. */
 export const PREVIEW_PAGE_COUNT = 3;
 
@@ -110,6 +113,8 @@ export const SORT_OPTIONS = [
   { value: "recent", label: "Most recent" },
   { value: "popular", label: "Most downloaded" },
   { value: "rating", label: "Highest rated" },
+  { value: "price_low", label: "Price: low to high" },
+  { value: "price_high", label: "Price: high to low" },
 ] as const;
 
 export type SortValue = (typeof SORT_OPTIONS)[number]["value"];

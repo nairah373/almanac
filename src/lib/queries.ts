@@ -1,4 +1,4 @@
-import { Prisma, type ResourceType } from "@prisma/client";
+import { Prisma, type ResourceType, type PayoutStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { SortValue } from "@/lib/constants";
 import { reputationScore, type CreatorStats } from "@/lib/reputation";
@@ -91,6 +91,10 @@ function sortCards(items: ResourceCard[], sort: SortValue): ResourceCard[] {
       return c.sort(
         (a, b) => b.avgRating - a.avgRating || b.reviewCount - a.reviewCount,
       );
+    case "price_low":
+      return c.sort((a, b) => a.priceInPaise - b.priceInPaise);
+    case "price_high":
+      return c.sort((a, b) => b.priceInPaise - a.priceInPaise);
     default:
       return c.sort(
         (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
@@ -296,6 +300,73 @@ export async function getCreatorEarnings(userId: string) {
     totalEarningInPaise: agg._sum.creatorEarningInPaise ?? 0,
     salesCount: agg._count._all,
   };
+}
+
+/**
+ * A creator's payout balance. `available` = lifetime 85% earnings minus
+ * everything requested, in-flight, or paid out (rejected payouts free funds).
+ */
+export async function getCreatorBalance(userId: string) {
+  const [earn, payoutAgg] = await Promise.all([
+    prisma.purchase.aggregate({
+      where: { creatorId: userId, status: "PAID" },
+      _sum: { creatorEarningInPaise: true },
+      _count: { _all: true },
+    }),
+    prisma.payout.groupBy({
+      by: ["status"],
+      where: { creatorId: userId },
+      _sum: { amountInPaise: true },
+    }),
+  ]);
+
+  const lifetimeInPaise = earn._sum.creatorEarningInPaise ?? 0;
+  const sumBy = (s: PayoutStatus) =>
+    payoutAgg.find((p) => p.status === s)?._sum.amountInPaise ?? 0;
+  const pendingInPaise = sumBy("REQUESTED") + sumBy("PROCESSING");
+  const paidOutInPaise = sumBy("PAID");
+  const availableInPaise = Math.max(
+    0,
+    lifetimeInPaise - pendingInPaise - paidOutInPaise,
+  );
+
+  return {
+    lifetimeInPaise,
+    pendingInPaise,
+    paidOutInPaise,
+    availableInPaise,
+    salesCount: earn._count._all,
+  };
+}
+
+export async function getPayoutAccount(userId: string) {
+  return prisma.payoutAccount.findUnique({ where: { profileId: userId } });
+}
+
+export async function getPayouts(userId: string) {
+  return prisma.payout.findMany({
+    where: { creatorId: userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/** Open payouts awaiting action — admin queue. */
+export async function getPendingPayouts() {
+  return prisma.payout.findMany({
+    where: { status: { in: ["REQUESTED", "PROCESSING"] } },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          fullName: true,
+          username: true,
+          email: true,
+          payoutAccount: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
 }
 
 export async function getAllPublishedResourceIds(): Promise<

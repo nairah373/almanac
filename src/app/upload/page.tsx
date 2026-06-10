@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Eye, Fingerprint, Gift } from "lucide-react";
+import { Eye, Fingerprint, IndianRupee } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import { UploadForm } from "@/components/UploadForm";
 import { PageHero } from "@/components/PageHero";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Upload a resource",
-  description: "Share your study notes for free and help students everywhere.",
+  description: "Share your study notes and earn from every download.",
 };
 
 const GUIDELINES = [
@@ -19,14 +19,14 @@ const GUIDELINES = [
     text: "First 3 pages auto-generate as a free preview.",
   },
   {
-    icon: Gift,
+    icon: IndianRupee,
     tile: "bg-emerald-100 text-emerald-600",
-    text: "Free for every student — no paywalls, ever.",
+    text: "You keep 85% of every sale — paid out per order.",
   },
   {
     icon: Fingerprint,
     tile: "bg-amber-100 text-amber-600",
-    text: "Downloads are watermarked with the student's identity.",
+    text: "Downloads are watermarked with the buyer's identity.",
   },
 ];
 

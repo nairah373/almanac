@@ -4,8 +4,7 @@ import {
   ArrowRight,
   Award,
   Fingerprint,
-  Gift,
-  Heart,
+  IndianRupee,
   Sparkles,
   Tag,
   Upload,
@@ -31,7 +30,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Become a creator",
   description:
-    "Share your notes free on Almanac and help students across India — the trusted academic library for Indian students.",
+    "Turn your notes into income on Almanac — the trusted academic library for Indian students.",
 };
 
 const TYPE_DESCRIPTIONS: Record<ResourceType, string> = {
@@ -55,28 +54,28 @@ const STEPS = [
   {
     icon: Upload,
     title: "Upload",
-    body: "Drag and drop your PDF. We auto-generate a clean preview — your full file stays private.",
+    body: "Drag and drop your PDF. We auto-generate a clean preview for buyers — your full file stays private.",
     tile: "bg-indigo-100 text-indigo-600",
   },
   {
     icon: Tag,
-    title: "Tag it",
-    body: "Add university, branch, semester and subject so the right students find your notes.",
+    title: "Tag and price",
+    body: "Add university, branch, semester and subject. Offer it free, or set a price between ₹10 and ₹2000.",
     tile: "bg-rose-100 text-rose-600",
   },
   {
-    icon: Heart,
-    title: "Reach students",
-    body: "Your notes stay free for everyone. Every download is tracked and builds your reputation as more students use them.",
+    icon: IndianRupee,
+    title: "Earn",
+    body: "Every download is tracked. You keep 85% of every sale, paid out per order — no minimums.",
     tile: "bg-emerald-100 text-emerald-600",
   },
 ];
 
 const PERKS = [
   {
-    icon: Gift,
-    title: "Free for every student",
-    body: "No paywalls — your notes reach as many students as possible, and your work helps the people who need it.",
+    icon: IndianRupee,
+    title: "Keep 85% of every sale",
+    body: "One of the highest creator splits anywhere — the platform takes a small flat 15% to keep the lights on.",
     tile: "bg-emerald-100 text-emerald-600",
   },
   {
@@ -167,14 +166,14 @@ export default async function CreatorPortalPage() {
                   color: "transparent",
                 }}
               >
-                impact.
+                income.
               </span>
             </h1>
             <DoodleSquiggle className="mx-auto mt-2 h-3.5 w-40 text-violet-500" />
             <p className="mx-auto mt-5 max-w-xl text-balance text-base leading-relaxed text-muted sm:text-lg">
-              {APP_NAME} is built for student creators. Upload once, help
-              students everywhere for free, and build a reputation that follows
-              you across colleges.
+              {APP_NAME} is built for student creators. Upload once, earn every
+              time someone downloads, and build a reputation that follows you
+              across colleges.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -194,7 +193,7 @@ export default async function CreatorPortalPage() {
             </div>
 
             <p className="mt-7 text-xs text-faint">
-              Free for students · Watermarked downloads · Build your following
+              85% of every sale · Watermarked downloads · Build your following
             </p>
           </div>
         </div>
@@ -222,7 +221,8 @@ export default async function CreatorPortalPage() {
             Got notes that helped you?
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-            Share them now and help another student every time they download.
+            Share them now and start earning every time another student
+            downloads.
           </p>
           <Link
             href={ctaHref}
@@ -238,8 +238,8 @@ export default async function CreatorPortalPage() {
       <section className="mx-auto max-w-6xl px-5 py-12">
         <SectionHeading
           eyebrow="How it works"
-          title="From notes to impact in three steps"
-          description="No setup, no contracts. Just upload and help students."
+          title="From notes to earnings in three steps"
+          description="No setup, no contracts, no minimum sales. Just upload."
         />
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {STEPS.map((step, i) => (
@@ -312,7 +312,7 @@ export default async function CreatorPortalPage() {
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/70">
             Your work helped you get through your exams. Let it help thousands
-            of other students — for free.
+            of other students — and earn from every download.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link

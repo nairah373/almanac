@@ -45,14 +45,14 @@ const STEPS = [
   },
   {
     icon: Eye,
-    title: "Preview before you download",
-    body: "Read the opening pages and check ratings, downloads and the uploader's identity before you download a thing.",
+    title: "Preview before you pay",
+    body: "Read the opening pages and check ratings, downloads and the uploader's identity before a single rupee changes hands.",
     tile: "bg-rose-100 text-rose-600",
   },
   {
     icon: GraduationCap,
     title: "Learn, then give back",
-    body: "Download instantly — everything's free. Upload your own notes to help students across the country.",
+    body: "Download instantly. Upload your own notes and earn from every student you help across the country.",
     tile: "bg-emerald-100 text-emerald-600",
   },
 ];
@@ -73,7 +73,7 @@ const TRUST = [
   {
     icon: Fingerprint,
     title: "Traceable downloads",
-    body: "Every file is watermarked with the student's identity, so good work stays respected.",
+    body: "Every file is watermarked with the buyer's identity, so good work stays respected.",
     tile: "bg-teal-100 text-teal-600",
   },
 ];
@@ -290,8 +290,8 @@ export default async function HomePage() {
             Your notes helped you. Let them help others.
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/70">
-            Upload once, help a student every time they download. Build a
-            reputation that follows you across campuses.
+            Upload once, earn every time a student downloads. Build a reputation
+            that follows you across campuses.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link

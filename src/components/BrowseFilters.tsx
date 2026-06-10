@@ -95,6 +95,16 @@ export function BrowseFilters() {
         </Select>
 
         <Select
+          label="Price"
+          value={get("price")}
+          onChange={(e) => update("price", e.target.value)}
+        >
+          <option value="">Free &amp; paid</option>
+          <option value="free">Free only</option>
+          <option value="paid">Paid only</option>
+        </Select>
+
+        <Select
           label="Resource type"
           value={get("type")}
           onChange={(e) => update("type", e.target.value)}

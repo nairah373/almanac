@@ -13,7 +13,9 @@ import {
   BRANCHES,
   BUCKET_ORIGINALS,
   EXAM_TYPES,
+  MAX_PRICE_INR,
   MAX_UPLOAD_BYTES,
+  MIN_PRICE_INR,
   RESOURCE_TYPE_META,
   RESOURCE_TYPES,
   SEMESTERS,
@@ -39,6 +41,7 @@ type CreateResponse = {
 export function UploadForm() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
+  const [isFree, setIsFree] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +77,15 @@ export function UploadForm() {
     }
 
     const fd = new FormData(e.currentTarget);
+    const priceInRupees = Number(fd.get("priceInRupees") || 0);
+    if (
+      !isFree &&
+      (priceInRupees < MIN_PRICE_INR || priceInRupees > MAX_PRICE_INR)
+    ) {
+      setError(`Price must be between ₹${MIN_PRICE_INR} and ₹${MAX_PRICE_INR}.`);
+      return;
+    }
+
     const examType = String(fd.get("examType") || "");
     const payload = {
       title: String(fd.get("title") || ""),
@@ -86,8 +98,8 @@ export function UploadForm() {
       moduleName: String(fd.get("moduleName") || "") || undefined,
       examType:
         examType && examType !== "Not exam-specific" ? examType : undefined,
-      // Almanac is free for students — every resource is shared at no cost.
-      isFree: true,
+      isFree,
+      priceInRupees: isFree ? 0 : priceInRupees,
       fileSizeBytes: file.size,
     };
 
@@ -301,13 +313,40 @@ export function UploadForm() {
         </div>
       </section>
 
-      {/* ── Free for students ────────────────────────────── */}
-      <section className="rounded-2xl border border-line bg-surface p-6">
-        <h2 className="text-sm font-semibold text-ink">3 · Free for students</h2>
-        <p className="mt-1 text-xs text-muted">
-          Every resource on {"Almanac"} is shared free of cost. Your uploads,
-          downloads and ratings build your reputation across colleges.
-        </p>
+      {/* ── Pricing ──────────────────────────────────────── */}
+      <section className="space-y-4 rounded-2xl border border-line bg-surface p-6">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">3 · Pricing</h2>
+          <p className="mt-1 text-xs text-muted">
+            You keep 85% of every sale. Free resources still build your
+            reputation.
+          </p>
+        </div>
+
+        <label className="flex items-center gap-3 rounded-xl border border-line bg-bg p-3">
+          <input
+            type="checkbox"
+            checked={isFree}
+            onChange={(e) => setIsFree(e.target.checked)}
+            className="h-4 w-4 accent-ink"
+          />
+          <span className="text-sm text-ink">
+            Offer this resource for free
+          </span>
+        </label>
+
+        {!isFree && (
+          <Input
+            label="Price (₹)"
+            name="priceInRupees"
+            type="number"
+            min={MIN_PRICE_INR}
+            max={MAX_PRICE_INR}
+            step={1}
+            placeholder={`Between ${MIN_PRICE_INR} and ${MAX_PRICE_INR}`}
+            hint={`Students pay this once. You earn 85%.`}
+          />
+        )}
       </section>
 
       {error && (

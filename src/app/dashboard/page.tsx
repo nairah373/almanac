@@ -7,15 +7,20 @@ import {
   FileText,
   Library,
   Upload,
+  Wallet,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import {
+  getCreatorBalance,
+  getCreatorEarnings,
   getCreatorStats,
+  getPayoutAccount,
+  getPayouts,
   getUserLibrary,
   getUserUploads,
 } from "@/lib/queries";
 import { RESOURCE_TYPE_META } from "@/lib/constants";
-import { formatDate, formatNumber } from "@/lib/format";
+import { formatDate, formatINR, formatNumber } from "@/lib/format";
 import { tierOf } from "@/lib/reputation";
 import { cn } from "@/lib/cn";
 import { Avatar } from "@/components/ui/Avatar";
@@ -25,6 +30,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CreatorBadge } from "@/components/CreatorBadge";
 import { PageHero } from "@/components/PageHero";
 import { DeleteResourceButton } from "@/components/DeleteResourceButton";
+import { PayoutPanel } from "@/components/PayoutPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +39,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 const TABS = [
   { id: "library", label: "My library", icon: Library },
   { id: "uploads", label: "My uploads", icon: Upload },
+  { id: "payouts", label: "Earnings", icon: Wallet },
 ] as const;
 
 export default async function DashboardPage({
@@ -44,7 +51,12 @@ export default async function DashboardPage({
   if (!profile) redirect("/login?next=/dashboard");
 
   const sp = await searchParams;
-  const tab = sp.tab === "uploads" ? "uploads" : "library";
+  const tab =
+    sp.tab === "uploads"
+      ? "uploads"
+      : sp.tab === "payouts"
+        ? "payouts"
+        : "library";
 
   const stats = await getCreatorStats(profile.id);
   const tier = tierOf(stats);
@@ -96,6 +108,7 @@ export default async function DashboardPage({
         <div className="mt-7">
           {tab === "library" && <LibraryTab userId={profile.id} />}
           {tab === "uploads" && <UploadsTab userId={profile.id} />}
+          {tab === "payouts" && <PayoutsTab userId={profile.id} />}
         </div>
       </div>
     </div>
@@ -168,31 +181,33 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 async function UploadsTab({ userId }: { userId: string }) {
-  const uploads = await getUserUploads(userId);
+  const [uploads, earnings] = await Promise.all([
+    getUserUploads(userId),
+    getCreatorEarnings(userId),
+  ]);
   const totalDownloads = uploads.reduce((s, r) => s + r.downloadCount, 0);
-  const totalStudents = uploads.reduce((s, r) => s + r._count.purchases, 0);
   const published = uploads.filter((r) => r.status === "PUBLISHED").length;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Resources" value={formatNumber(uploads.length)} />
-        <StatCard label="Published" value={formatNumber(published)} />
+        <StatCard
+          label="Total earnings"
+          value={formatINR(earnings.totalEarningInPaise)}
+        />
+        <StatCard label="Paid sales" value={formatNumber(earnings.salesCount)} />
         <StatCard
           label="Total downloads"
           value={formatNumber(totalDownloads)}
         />
-        <StatCard
-          label="Students reached"
-          value={formatNumber(totalStudents)}
-        />
+        <StatCard label="Published" value={formatNumber(published)} />
       </div>
 
       {uploads.length === 0 ? (
         <EmptyState
           icon={Upload}
           title="No uploads yet"
-          description="Share your first resource and help students across India."
+          description="Share your first resource and start earning from your notes."
           action={
             <Link href="/upload" className={buttonVariants({ size: "sm" })}>
               Upload a resource
@@ -227,9 +242,9 @@ async function UploadsTab({ userId }: { userId: string }) {
                   </Badge>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-faint">
-                  Free · {formatNumber(r.downloadCount)} downloads ·{" "}
-                  {formatNumber(r._count.purchases)} students ·{" "}
-                  {r._count.reviews} reviews
+                  {r.isFree ? "Free" : formatINR(r.priceInPaise)} ·{" "}
+                  {formatNumber(r.downloadCount)} downloads ·{" "}
+                  {r._count.purchases} sales · {r._count.reviews} reviews
                 </p>
               </div>
               <Link
@@ -245,9 +260,53 @@ async function UploadsTab({ userId }: { userId: string }) {
       )}
 
       <p className="text-xs text-faint">
-        Everything you share on Almanac is free for students. Your downloads,
-        ratings and followers build your reputation across colleges.
+        Earnings reflect your 85% share of completed sales. Add a payout method
+        and withdraw your balance from the{" "}
+        <Link href="/dashboard?tab=payouts" className="underline hover:text-ink">
+          Earnings
+        </Link>{" "}
+        tab.
       </p>
     </div>
+  );
+}
+
+async function PayoutsTab({ userId }: { userId: string }) {
+  const [balance, account, payouts] = await Promise.all([
+    getCreatorBalance(userId),
+    getPayoutAccount(userId),
+    getPayouts(userId),
+  ]);
+
+  return (
+    <PayoutPanel
+      balance={{
+        availableInPaise: balance.availableInPaise,
+        pendingInPaise: balance.pendingInPaise,
+        paidOutInPaise: balance.paidOutInPaise,
+        lifetimeInPaise: balance.lifetimeInPaise,
+      }}
+      account={
+        account
+          ? {
+              method: account.method,
+              holderName: account.holderName,
+              upiId: account.upiId,
+              accountNumber: account.accountNumber,
+              ifsc: account.ifsc,
+              bankName: account.bankName,
+            }
+          : null
+      }
+      payouts={payouts.map((p) => ({
+        id: p.id,
+        amountInPaise: p.amountInPaise,
+        status: p.status,
+        destination: p.destination,
+        reference: p.reference,
+        note: p.note,
+        createdAt: p.createdAt,
+      }))}
+    />
   );
 }

@@ -41,6 +41,18 @@ enum PurchaseStatus {
   FREE
 }
 
+enum PayoutMethod {
+  UPI
+  BANK
+}
+
+enum PayoutStatus {
+  REQUESTED
+  PROCESSING
+  PAID
+  REJECTED
+}
+
 /// A user account. id is the Supabase auth user UUID.
 model Profile {
   id              String   @id @db.Uuid
@@ -56,12 +68,14 @@ model Profile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  resources Resource[] @relation("CreatorResources")
-  purchases Purchase[] @relation("BuyerPurchases")
-  sales     Purchase[] @relation("CreatorSales")
-  reviews   Review[]
-  following Follow[]   @relation("Follower")
-  followers Follow[]   @relation("Creator")
+  resources     Resource[]     @relation("CreatorResources")
+  purchases     Purchase[]     @relation("BuyerPurchases")
+  sales         Purchase[]     @relation("CreatorSales")
+  reviews       Review[]
+  following      Follow[]       @relation("Follower")
+  followers      Follow[]       @relation("Creator")
+  payoutAccount PayoutAccount?
+  payouts       Payout[]       @relation("CreatorPayouts")
 }
 
 /// An uploaded study resource (note, PYQ, formula sheet, etc.).
@@ -150,4 +164,40 @@ model Follow {
 
   @@unique([followerId, creatorId])
   @@index([creatorId])
+}
+
+/// A creator's saved payout destination (UPI or bank). One per profile.
+model PayoutAccount {
+  id            String       @id @default(cuid())
+  method        PayoutMethod
+  holderName    String
+  upiId         String?
+  accountNumber String?
+  ifsc          String?
+  bankName      String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  profileId String  @unique @db.Uuid
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+/// A withdrawal request from a creator. While REQUESTED/PROCESSING/PAID it
+/// reserves part of the creator's earned balance; REJECTED frees it again.
+model Payout {
+  id            String       @id @default(cuid())
+  amountInPaise Int
+  status        PayoutStatus @default(REQUESTED)
+  method        PayoutMethod
+  destination   String // snapshot of the UPI id / masked account at request time
+  note          String? // admin note or rejection reason
+  reference     String? // bank/UPI reference once paid out
+  createdAt     DateTime     @default(now())
+  processedAt   DateTime?
+
+  creatorId String  @db.Uuid
+  creator   Profile @relation("CreatorPayouts", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+  @@index([status, createdAt])
 }
